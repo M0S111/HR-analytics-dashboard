@@ -138,7 +138,7 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
     
     try:
 
-        data = get_cached_job_data(search_country, search_term, search_city, max_pages=10)
+        data = get_cached_job_data(search_country, search_term, search_city, max_pages=5)
         
         loc_display = search_city.title() if search_city else search_country.upper()
 
