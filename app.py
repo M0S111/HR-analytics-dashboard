@@ -288,4 +288,4 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         return {}, {}, {}, {}, {}, f"Failed to fetch data: {str(e)}"
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=10000)
