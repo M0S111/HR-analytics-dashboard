@@ -88,16 +88,36 @@ async def fetch_page(client: httpx.AsyncClient, search_country: str, search_term
         response = await client.get(url, params=params, timeout=10.0)
         if response.status_code == 200:
             return response.json().get("results", [])
-    except Exception:
-        pass
+
+        print(f"Adzuna Response Status: {response.status_code}")
+
+        if response.status_code != 200:
+                print(f"API Error Raw Body: {response.text}")
+                print("--- [API DEBUG END] ---\n")
+                return []
+
+    except Exception as e:
+        print(f"Exception during HTTP request: {e}")
+        print("--- [API DEBUG END] ---\n")
     return []
 
 # 2. Manager function to dispatch concurrent page tasks
 async def fetch_all_pages_async(country: str, search_term: str, search_city: str, max_pages: int):
     # Limits concurrent network connections to avoid triggering 429 rate limits
     limits = httpx.Limits(max_connections=5)
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) DashApp/1.0"}
+
+    print(f"\n--- [API DEBUG START] ---")
+    print(f"ADZUNA_APP_ID loaded: '{APP_ID}' (Length: {len(APP_ID)})")
+    print(f"ADZUNA_APP_KEY loaded: '{'SET' if APP_KEY else 'EMPTY'}' (Length: {len(APP_KEY)})")
+
+    if not APP_ID or not APP_KEY:
+        print("ERROR: Credentials missing or empty!")
+        print("--- [API DEBUG END] ---\n")
+        return []
     
-    with httpx.Client(limits=limits) as client:
+    print(f"Sending GET request with role='{search_term}', location='{country}'...")
+    with httpx.Client(limits=limits, headers=headers) as client:
         tasks = [
             fetch_page(client, country, search_term, search_city, page)
             for page in range(1, max_pages + 1)
