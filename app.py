@@ -119,7 +119,7 @@ async def fetch_all_pages_async(country: str, search_term: str, search_city: str
 
 
 @cache.memoize()
-def get_cached_job_data(search_country: str, search_term: str, search_city: str, max_pages: int = 10):
+def get_cached_job_data(search_country: str, search_term: str, search_city: str, max_pages: int = 5):
     # Pure isolated event loop execution for sync WSGI workers
     return asyncio.run(
         fetch_all_pages_async(search_country, search_term, search_city, max_pages)
@@ -143,7 +143,7 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         return {}, {}, {}, {}, {}, "Please enter a job title to search."
 
     try:
-        data = get_cached_job_data(search_country, search_term, search_city, max_pages=5)
+        data = get_cached_job_data(search_country, search_term, search_city, max_pages=10)
         loc_display = search_city.title() if search_city else search_country.upper()
 
         if not data:
