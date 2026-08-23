@@ -97,7 +97,7 @@ async def fetch_all_pages_async(country: str, search_term: str, search_city: str
     # Limits concurrent network connections to avoid triggering 429 rate limits
     limits = httpx.Limits(max_connections=5)
     
-    async with httpx.AsyncClient(limits=limits) as client:
+    with httpx.Client(limits=limits) as client:
         tasks = [
             fetch_page(client, country, search_term, search_city, page)
             for page in range(1, max_pages + 1)
