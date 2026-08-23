@@ -117,7 +117,7 @@ async def fetch_all_pages_async(country: str, search_term: str, search_city: str
         return []
     
     print(f"Sending GET request with role='{search_term}', location='{country}'...")
-    with httpx.Client(limits=limits, headers=headers) as client:
+    async with httpx.AsyncClient(limits=limits, headers=headers) as client:
         tasks = [
             fetch_page(client, country, search_term, search_city, page)
             for page in range(1, max_pages + 1)
@@ -132,7 +132,14 @@ async def fetch_all_pages_async(country: str, search_term: str, search_city: str
 @cache.memoize()
 def get_cached_job_data(search_country: str, search_term: str, search_city: str, max_pages: int = 5):
 
-    return asyncio.run(fetch_all_pages_async(search_country, search_term, search_city, max_pages))
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+    return loop.run_until_complete(
+        fetch_all_pages_async(search_country, search_term, search_city, max_pages)
 
 # Callback for Self-Service Data Refresh
 @app.callback(
