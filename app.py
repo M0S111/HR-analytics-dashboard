@@ -119,7 +119,7 @@ async def fetch_all_pages_async(country: str, search_term: str, search_city: str
 
 
 @cache.memoize()
-def get_cached_job_data(search_country: str, search_term: str, search_city: str, max_pages: int = 5):
+def get_cached_job_data(search_country: str, search_term: str, search_city: str, max_pages: int = 10):
     # Pure isolated event loop execution for sync WSGI workers
     return asyncio.run(
         fetch_all_pages_async(search_country, search_term, search_city, max_pages)
