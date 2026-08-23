@@ -140,6 +140,7 @@ def get_cached_job_data(search_country: str, search_term: str, search_city: str,
         
     return loop.run_until_complete(
         fetch_all_pages_async(search_country, search_term, search_city, max_pages)
+    )
 
 # Callback for Self-Service Data Refresh
 @app.callback(
