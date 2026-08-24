@@ -53,7 +53,7 @@ app.layout = html.Div([
         id="loading-text",
         type="dot",
         color="#8473F2",
-        children=html.Div(id="status-msg", style={"fontWeight": "bold", "marginBottom": "15px", "height": "20px"}),
+        children=html.Div(id="status-msg", style={"fontWeight": "bold", "marginBottom": "15px", "height": "50px"}),
     ),
     
     # Dashboard Visualizations
@@ -299,7 +299,7 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         now = datetime.now().strftime("%c")
         # Output: "Monday, August 24, 2026 at 01:06 PM"
 
-        return fig_kpi1, fig_kpi2, fig_salary, fig_titles, fig_dot, f"Data sourced from Adzuna endpoint: {f"https://api.adzuna.com/v1/api/jobs/{search_country}/search/"} at {now}.\nTop {length} clean postings of 500 in {loc_display}."
+        return fig_kpi1, fig_kpi2, fig_salary, fig_titles, fig_dot, f"Data sourced from Adzuna endpoint: '{f"https://api.adzuna.com/v1/api/jobs/{search_country}/search/"}' at {now}.\nTop {length} clean postings of 500 in {loc_display}."
 
     except Exception as e:
         
