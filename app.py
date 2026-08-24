@@ -287,10 +287,12 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         if df['country'].iloc[0] != "Unknown" and len(loc_display) <= 3:
             loc_display = df['country'].iloc[0]
 
+        length = len(df)
+
         del df, data
         gc.collect()
 
-        return fig_kpi1, fig_kpi2, fig_salary, fig_titles, fig_dot, f"Data refreshed. Top {len(df)} postings in {loc_display}."
+        return fig_kpi1, fig_kpi2, fig_salary, fig_titles, fig_dot, f"Data refreshed. Top {length} postings in {loc_display}."
 
     except Exception as e:
         
