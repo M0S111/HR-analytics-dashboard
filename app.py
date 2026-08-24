@@ -171,6 +171,12 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         if df.empty:
             return {}, {}, {}, {}, {}, f"No listings with valid salary data found for '{search_term}'."
 
+        iqr = df["salary_min"].quantile(0.75) - df["salary_min"].quantile(0.25)
+        lobound = df["salary_min"].quantile(0.25) - (iqr * 1.5)
+        upbound = df["salary_min"].quantile(0.75) + (iqr * 1.5)
+
+        df = df[(df['salary_min'] >= lobound) & (df['salary_min'] <= upbound)]
+
         mean_sal = df["salary_min"].mean()
         median_sal = df["salary_min"].median()
         min_sal = df["salary_min"].min()
@@ -185,7 +191,7 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
                 "position": "bottom"
             },
             number={"prefix": "$", "valueformat": ",.0f"},
-            title={"text": "Avg. Salary (relative to min)"}
+            title={"text": "Avg. Annual Salary (relative to min)"}
         )).update_layout(height=180, margin=dict(l=20, r=20, t=40, b=20))
 
         fig_kpi2 = go.Figure(go.Indicator(
@@ -198,13 +204,13 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
                 "position": "bottom"
             },
             number={"prefix": "$", "valueformat": ",.0f"},
-            title={"text": "Median Salary (relative to min)"}
+            title={"text": "Median Annual Salary (relative to min)"}
         )).update_layout(height=180, margin=dict(l=20, r=20, t=40, b=20))
 
         # Plot: Salary Distribution
         fig_salary = px.histogram(
             df, x="salary_min", nbins=30,
-            title=f"Salary Distribution for '{search_term}'",
+            title=f"Salary Distribution for '{search_term.title()}'",
             labels={"salary_min": "Min Salary ($)"},
             template="plotly_white"
         ).update_traces(
@@ -232,7 +238,7 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
 
         fig_titles = px.bar(
             top_titles, x="Title", y="Openings", orientation="v",
-            title=f"Top Job Post titles for '{search_term}'",
+            title=f"Top Job Post titles for '{search_term.title()}'",
             template="plotly_white"
         ).update_yaxes(
             ticks="outside",
