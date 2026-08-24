@@ -53,7 +53,7 @@ app.layout = html.Div([
         id="loading-text",
         type="dot",
         color="#8473F2",
-        children=html.Div(id="status-msg", style={"fontWeight": "bold", "marginBottom": "15px"}),
+        children=html.Div(id="status-msg", style={"fontWeight": "bold", "marginBottom": "15px", "height": "20px"}),
     ),
     
     # Dashboard Visualizations
