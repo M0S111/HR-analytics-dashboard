@@ -1,5 +1,6 @@
 import dash
 from dash import dcc, html, Input, Output, State
+import dash_bootstrap_components as dbc
 from flask_caching import Cache
 from datetime import datetime
 import plotly.express as px
@@ -15,7 +16,11 @@ APP_ID = os.environ.get("APP_ID", "")
 APP_KEY = os.environ.get("APP_KEY", "")
 MAX_CHARS = 20
 
-app = dash.Dash(__name__)
+# Initialize Dash app with Bootstrap FLATLY theme
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.FLATLY]
+)
 server = app.server
 
 cache = Cache(app.server, config={
@@ -24,52 +29,134 @@ cache = Cache(app.server, config={
     "CACHE_THRESHOLD": 100
 })
 
-app.layout = html.Div([
-    html.H1("HR & Job Market Analytics Dashboard", style={"textAlign": "center"}),
-    
+app.layout = dbc.Container([
+    # Header Section
+    dbc.Row([
+        dbc.Col([
+            html.Div([
+                html.H1("HR & Job Market Analytics Dashboard", className="display-5 fw-bold text-primary mb-1"),
+                html.P("Real-time job market intelligence, salary distributions, and geographic telemetry powered by Adzuna API.", className="lead text-muted")
+            ], className="text-center py-4")
+        ], width=12)
+    ]),
+
     # Control Panel
-    html.Div([
-        html.Label("Search Role: "),
-        dcc.Input(id="search-term", type="text", value="Data Analyst", style={"margin": "10px"}),
-        html.Label("Country: "),
-        dcc.Dropdown(
-            id="search-country",
-            options=[
-                {"label": "United States", "value": "us"},
-                {"label": "United Kingdom", "value": "gb"},
-                {"label": "Canada", "value": "ca"}
-            ],
-            value="us",
-            clearable=False,
-            style={"width": "300px", "margin": "10px"}
-        ),
-        html.Label("City/State: "),
-        dcc.Input(id="search-city", type="text", value="", style={"margin": "10px"}),
-        html.Button("Refresh Data", id="refresh-btn", n_clicks=0, style={"cursor": "pointer"}),
-    ], style={"padding": "20px", "backgroundColor": "#f8f9fa", "borderRadius": "8px", "marginBottom": "20px"}),
-    
-    # Status Message
-    dcc.Loading(
-        id="loading-text",
-        type="dot",
-        color="#8473F2",
-        children=html.Div(id="status-msg", style={"fontWeight": "bold", "marginBottom": "15px"}),
-    ),
-    
-    # Dashboard Visualizations
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardHeader(html.H5("Filter & Query Parameters", className="card-title mb-0 fw-semibold text-secondary")),
+                dbc.CardBody([
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Search Role", className="fw-bold text-dark"),
+                            dbc.Input(id="search-term", type="text", value="Data Analyst", placeholder="e.g. Data Analyst", className="shadow-sm")
+                        ], xs=12, md=3, className="mb-3 mb-md-0"),
+
+                        dbc.Col([
+                            dbc.Label("Country", className="fw-bold text-dark"),
+                            dbc.Select(
+                                id="search-country",
+                                options=[
+                                    {"label": "United States", "value": "us"},
+                                    {"label": "United Kingdom", "value": "gb"},
+                                    {"label": "Canada", "value": "ca"}
+                                ],
+                                value="us",
+                                className="shadow-sm"
+                            )
+                        ], xs=12, md=3, className="mb-3 mb-md-0"),
+
+                        dbc.Col([
+                            dbc.Label("City/State", className="fw-bold text-dark"),
+                            dbc.Input(id="search-city", type="text", value="", placeholder="Optional city or state", className="shadow-sm")
+                        ], xs=12, md=3, className="mb-3 mb-md-0"),
+
+                        dbc.Col([
+                            dbc.Label("\u00a0", className="d-block"), # Spacer for vertical alignment with labels
+                            dbc.Button("Refresh Data", id="refresh-btn", color="primary", class_name="w-100 shadow-sm fw-bold", n_clicks=0)
+                        ], xs=12, md=3)
+                    ])
+                ])
+            ], className="shadow-sm mb-4 border-0")
+        ], width=12)
+    ]),
+
+    # Status Message Container
+    dbc.Row([
+        dbc.Col([
+            dcc.Loading(
+                id="loading-text",
+                type="dot",
+                color="#2C3E50",
+                children=dbc.Alert(
+                    id="status-msg",
+                    color="info",
+                    className="shadow-sm mb-4 fw-bold text-center border-0"
+                )
+            )
+        ], width=12)
+    ]),
+
+    # Dashboard Visualizations Grid
     dcc.Loading(
         id="loading-graphs",
         type="dot",
-        color="#8473F2",
+        color="#2C3E50",
         children=html.Div([
-            dcc.Graph(id="mean_card", style={"width": "50%", "display": "inline-block"}),
-            dcc.Graph(id="median_card", style={"width": "50%", "display": "inline-block"}),
-            dcc.Graph(id="salary-dist-graph", style={"width": "100%", "display": "inline-block"}),
-            dcc.Graph(id="job-titles-graph", style={"width": "100%", "display": "inline-block"}),
-            dcc.Graph(id="jobs-distribution-graph", style={"width": "100%", "display": "inline-block"}),
+            # KPI Cards Row
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id="mean_card", config={"displayModeBar": False})
+                        ])
+                    ], className="shadow-sm mb-4 border-0")
+                ], xs=12, md=6),
+
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id="median_card", config={"displayModeBar": False})
+                        ])
+                    ], className="shadow-sm mb-4 border-0")
+                ], xs=12, md=6)
+            ]),
+
+            # Salary Distribution Histogram Row
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id="salary-dist-graph", config={"displayModeBar": "hover"})
+                        ])
+                    ], className="shadow-sm mb-4 border-0")
+                ], width=12)
+            ]),
+
+            # Top Titles Bar Chart Row
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id="job-titles-graph", config={"displayModeBar": "hover"})
+                        ])
+                    ], className="shadow-sm mb-4 border-0")
+                ], width=12)
+            ]),
+
+            # Geographic Distribution Scatter Map Row
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id="jobs-distribution-graph", config={"displayModeBar": "hover"})
+                        ])
+                    ], className="shadow-sm mb-4 border-0")
+                ], width=12)
+            ])
         ])
     )
-], style={"font-family": "Consolas"})
+], fluid=True, className="p-4 bg-light min-vh-100")
 
 
 async def fetch_page(client: httpx.AsyncClient, search_country: str, search_term: str, search_city: str, page: int):
@@ -192,7 +279,12 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
             },
             number={"prefix": "$", "valueformat": ",.0f"},
             title={"text": "Avg. Annual Salary (relative to min)"}
-        )).update_layout(height=180, margin=dict(l=20, r=20, t=40, b=20))
+        )).update_layout(
+            height=160, 
+            margin=dict(l=20, r=20, t=40, b=20),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
 
         fig_kpi2 = go.Figure(go.Indicator(
             mode="number+delta",
@@ -205,7 +297,12 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
             },
             number={"prefix": "$", "valueformat": ",.0f"},
             title={"text": "Median Annual Salary (relative to min)"}
-        )).update_layout(height=180, margin=dict(l=20, r=20, t=40, b=20))
+        )).update_layout(
+            height=160, 
+            margin=dict(l=20, r=20, t=40, b=20),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
 
         # Plot: Salary Distribution
         fig_salary = px.histogram(
@@ -224,6 +321,9 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
             tickcolor="rgba(0,0,0,255)",
             title_standoff=20,
             automargin=True
+        ).update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
         # Plot: Top titles
@@ -248,7 +348,8 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
             automargin=True
         ).update_layout(
             xaxis={"categoryorder": "total descending", "tickangle": 45},
-            width=1000
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
         # Plot: Geographic Distribution
@@ -283,6 +384,9 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
             hover_data=["title", "company_name"],
             scope=plt_scope,
             title="Geographic Distribution of Openings by Salary"
+        ).update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
 
         fig_dot.update_geos(
@@ -303,12 +407,10 @@ def fetch_and_update_dashboard(n_clicks, search_term, search_country, search_cit
         gc.collect()
 
         now = datetime.now().strftime("%c")
-        # Output: "Monday, August 24, 2026 at 01:06 PM"
 
         return fig_kpi1, fig_kpi2, fig_salary, fig_titles, fig_dot, f"Top {length} clean postings of 500 in {loc_display} from Adzuna endpoint at {now}."
 
     except Exception as e:
-        
         if 'df' in locals():
             del df
         if 'data' in locals():
