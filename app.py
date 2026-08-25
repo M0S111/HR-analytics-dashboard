@@ -19,6 +19,8 @@ MAX_CHARS = 20
 # Initialize Dash app with Bootstrap FLATLY theme
 app = dash.Dash(
     __name__,
+    title="HR & Job Market Analytics",
+    update_title=None,
     external_stylesheets=[dbc.themes.FLATLY]
 )
 server = app.server
