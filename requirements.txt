@@ -6,3 +6,4 @@ httpx
 flask-caching
 nest-asyncio
 gunicorn
+certifi>=2026.10.19
